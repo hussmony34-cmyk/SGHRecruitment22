@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import {
-  listApplications,
+  getApplication,
   readStoredResume,
   saveEvaluation,
 } from "@/lib/application-store";
@@ -23,7 +23,7 @@ export async function GET(request, { params }) {
   if (!access.allowed) return jsonError("Invalid access credentials.", 401);
 
   const { id } = await params;
-  const application = (await listApplications()).find((item) => item.id === id);
+  const application = await getApplication(id);
   if (!application) return jsonError("Application not found.", 404);
   if (!application.resumeFile) return jsonError("No resume is attached to this application.", 404);
 

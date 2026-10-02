@@ -45,16 +45,34 @@ npm run build
   training needs, and move or close the candidate's pipeline stage; requires
   the HR key.
 
-## Deployment notes
+## Production deployment (Vercel + Supabase)
 
-This prototype stores records in a local JSON file at
-`data/applications.json` and uploaded resumes in `data/private-resumes/`. Both
-locations are excluded from Git because they contain personal data. Resume
-uploads are limited to PDF, DOC, or DOCX files up to 5 MB, and downloads require
-HR authorization. Local file storage is not suitable for multi-server
-deployments or hosts with ephemeral filesystems; use a persistent, encrypted
-database and private object storage before accepting real applications. Set a
-strong `HR_API_KEY` using the
-deployment platform's secret manager and use HTTPS. A shared HR key is only
-basic access protection and is not a replacement for individual staff
-accounts, role-based permissions, or access auditing in production.
+Production requires Supabase. The local JSON/file store is used only during
+development; the app refuses to use it in production so applications are not
+silently lost on an ephemeral host.
+
+1. Create a Supabase project and open **SQL Editor → New query**.
+2. Run [`supabase/schema.sql`](./supabase/schema.sql) to create the private
+   applications table and private resume bucket. The table is not readable by
+   anonymous visitors; the server uses the service-role key.
+3. In Supabase, open **Project Settings → API** and copy the Project URL and
+   `service_role` secret key. Keep the service-role key private; never use it
+   in a `NEXT_PUBLIC_*` variable or share it in chat.
+4. In Vercel, import `hussmony34-cmyk/SGHRecruitment22` and add these
+   environment variables under **Project Settings → Environment Variables**:
+   `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `HR_API_KEY`. Use the
+   Supabase Project URL and service-role key from step 3, and generate a
+   separate long random value for `HR_API_KEY`.
+5. Deploy. After adding or changing environment variables, redeploy so the
+   server picks them up. The public application is at `/apply`; HR signs in at
+   `/dashboard` with the `HR_API_KEY`.
+
+For local testing, copy `.env.example` to `.env.local`, fill in the values
+locally, then run `npm run dev`. Never commit `.env.local`.
+
+Resume uploads are private and limited to PDF, DOC, or DOCX files up to 5 MB.
+HR-authorized downloads are streamed through the server. Existing records in
+the local `data/applications.json` file and resumes in `data/private-resumes/`
+are not automatically copied to Supabase; migrate only records you have
+authorization to transfer. Protect HR access, restrict dashboard access, and
+set an appropriate data-retention policy before inviting real applicants.
