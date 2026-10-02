@@ -82,40 +82,124 @@ async function supabaseRequest(endpoint, options = {}) {
 }
 
 function applicationFromRow(row) {
+  const legacyApplication = {
+    fullName: row.full_name,
+    fullNameAr: row.full_name_ar,
+    fullNameEn: row.full_name_en,
+    nationalId: row.national_id,
+    birthDate: row.birth_date,
+    gender: row.gender,
+    nationality: row.nationality,
+    governorate: row.governorate,
+    address: row.address,
+    phone: row.phone,
+    whatsapp: row.whatsapp,
+    email: row.email,
+    sector: row.sector,
+    specialty: row.specialty,
+    qualification: row.qualification,
+    graduationYear: row.graduation_year,
+    university: row.university,
+    workedAtSGH: row.worked_at_sgh ? "yes" : "no",
+    sghBranch: row.sgh_branch,
+    sghJobTitle: row.sgh_job_title,
+    sghFromYear: row.sgh_from_year,
+    sghToYear: row.sgh_to_year,
+    sghReasonLeaving: row.sgh_reason_leaving,
+    medicalDegree: row.medical_degree,
+    syndicateNumber: row.syndicate_number,
+    clinicalDepartment: row.clinical_department,
+    hasBLS: row.has_bls,
+    hasACLS: row.has_acls,
+    subSpecialty: row.sub_specialty,
+    experienceYears: row.experience_years,
+    currentCompany: row.current_company,
+    currentJobTitle: row.current_job_title,
+    noticePeriod: row.notice_period,
+    expectedSalary: row.expected_salary,
+    answer: row.answer,
+    resumeFile: row.resume_path
+      ? {
+          filename: row.resume_path,
+          originalName: row.resume_original_name,
+          contentType: row.resume_content_type,
+          size: row.resume_size,
+        }
+      : null,
+  };
+  const storedApplication = row.application &&
+    typeof row.application === "object" &&
+    Object.keys(row.application).length > 0
+    ? row.application
+    : legacyApplication;
+  const currentStage = row.current_stage || "HR_INTERVIEW";
+  const evaluations = Array.isArray(row.evaluations)
+    ? row.evaluations
+    : row.evaluation
+      ? [{ ...row.evaluation, stage: row.evaluation.stage || currentStage }]
+      : [];
   return {
-    ...row.application,
+    ...storedApplication,
     id: row.id,
-    candidateCode: row.candidate_code,
-    currentStage: row.current_stage,
+    candidateCode: row.candidate_code || `SGH-${row.id.replaceAll("-", "").slice(0, 8).toUpperCase()}`,
+    currentStage,
     status: row.status,
     createdAt: row.created_at,
     evaluation: row.evaluation,
     lastEvaluation: row.evaluation,
-    evaluations: Array.isArray(row.evaluations) ? row.evaluations : [],
+    evaluations,
   };
 }
 
 function supabaseRowFromApplication(application) {
-  const {
-    id,
-    candidateCode,
-    currentStage,
-    status,
-    createdAt,
-    evaluation,
-    evaluations,
-    lastEvaluation,
-    ...candidateData
-  } = application;
   return {
-    id,
-    candidate_code: candidateCode,
-    current_stage: currentStage,
-    status,
-    created_at: createdAt,
-    application: candidateData,
-    evaluation,
-    evaluations,
+    id: application.id,
+    candidate_code: application.candidateCode,
+    current_stage: application.currentStage,
+    status: application.status,
+    created_at: application.createdAt,
+    application: application,
+    full_name: application.fullName,
+    full_name_ar: application.fullNameAr,
+    full_name_en: application.fullNameEn,
+    national_id: application.nationalId,
+    birth_date: application.birthDate,
+    gender: application.gender,
+    nationality: application.nationality,
+    governorate: application.governorate,
+    address: application.address,
+    phone: application.phone,
+    whatsapp: application.whatsapp,
+    email: application.email,
+    sector: application.sector,
+    specialty: application.specialty,
+    qualification: application.qualification,
+    graduation_year: application.graduationYear,
+    university: application.university,
+    worked_at_sgh: application.workedAtSGH === "yes" || application.workedAtSGH === true,
+    sgh_branch: application.sghBranch,
+    sgh_job_title: application.sghJobTitle,
+    sgh_from_year: application.sghFromYear,
+    sgh_to_year: application.sghToYear,
+    sgh_reason_leaving: application.sghReasonLeaving,
+    medical_degree: application.medicalDegree || "",
+    syndicate_number: application.syndicateNumber || "",
+    clinical_department: application.clinicalDepartment || "",
+    has_bls: application.hasBLS === true,
+    has_acls: application.hasACLS === true,
+    sub_specialty: application.subSpecialty || "",
+    experience_years: application.experienceYears,
+    current_company: application.currentCompany || "",
+    current_job_title: application.currentJobTitle || "",
+    notice_period: application.noticePeriod,
+    expected_salary: application.expectedSalary,
+    answer: application.answer,
+    resume_path: application.resumeFile?.filename || null,
+    resume_original_name: application.resumeFile?.originalName || null,
+    resume_content_type: application.resumeFile?.contentType || null,
+    resume_size: application.resumeFile?.size || null,
+    evaluation: application.evaluation,
+    evaluations: application.evaluations,
   };
 }
 

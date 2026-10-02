@@ -52,9 +52,12 @@ development; the app refuses to use it in production so applications are not
 silently lost on an ephemeral host.
 
 1. Create a Supabase project and open **SQL Editor → New query**.
-2. Run [`supabase/schema.sql`](./supabase/schema.sql) to create the private
-   applications table and private resume bucket. The table is not readable by
-   anonymous visitors; the server uses the service-role key.
+2. Run [`supabase/schema.sql`](./supabase/schema.sql) in the existing project.
+   It adds the recruitment pipeline fields to the existing `applications`
+   table and creates a separate private resume bucket. It does not delete
+   applicant records or change the existing `Candidate Resume` bucket. The
+   table is not readable by anonymous visitors; the server uses the
+   service-role key.
 3. In Supabase, open **Project Settings → API** and copy the Project URL and
    `service_role` secret key. Keep the service-role key private; never use it
    in a `NEXT_PUBLIC_*` variable or share it in chat.
@@ -73,6 +76,8 @@ locally, then run `npm run dev`. Never commit `.env.local`.
 Resume uploads are private and limited to PDF, DOC, or DOCX files up to 5 MB.
 HR-authorized downloads are streamed through the server. Existing records in
 the local `data/applications.json` file and resumes in `data/private-resumes/`
-are not automatically copied to Supabase; migrate only records you have
-authorization to transfer. Protect HR access, restrict dashboard access, and
-set an appropriate data-retention policy before inviting real applicants.
+are not automatically copied to Supabase. Existing rows in the Supabase
+`applications` table remain in place; new HR pipeline fields default those
+records to the first interview stage. Protect HR access, restrict dashboard
+access, and set an appropriate data-retention policy before inviting real
+applicants.
