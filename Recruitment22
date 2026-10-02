@@ -1,0 +1,8 @@
+# 1. اسحب المستودع الفاضي إلى جهازك
+git clone https://github.com/YOUR_USERNAME/SGHRecruitement.git
+
+# 2. ادخل إلى مجلد المشروع
+cd SGHRecruitement
+
+# 3. أنشئ مشروع Next.js حديث داخل نفس المجلد
+npx create-next-app@latest . --javascript --tailwind --eslint --app --src-dir --import-alias "@/*"
