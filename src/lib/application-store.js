@@ -51,7 +51,9 @@ async function supabaseRequest(endpoint, options = {}) {
     ...requestOptions,
     headers: {
       apikey: config.serviceRoleKey,
-      Authorization: `Bearer ${config.serviceRoleKey}`,
+      ...(config.serviceRoleKey.startsWith("sb_secret_")
+        ? {}
+        : { Authorization: `Bearer ${config.serviceRoleKey}` }),
       ...options.headers,
     },
     cache: "no-store",
